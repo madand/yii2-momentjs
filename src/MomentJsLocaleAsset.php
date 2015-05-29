@@ -7,6 +7,7 @@
 
 namespace madand\momentjs;
 
+use yii\base\InvalidConfigException;
 use yii\web\AssetBundle;
 use yii\web\View;
 use Yii;
@@ -54,11 +55,18 @@ class MomentJsLocaleAsset extends AssetBundle
 
     /**
      * @param \yii\web\View $view
+     * @throws \yii\base\InvalidConfigException If file with the locale is not exists.
      */
     public function registerLocaleInternal($view) {
+        $localeFile = strtolower($this->locale) . '.js';
+        $localeFilePath = "{$this->sourcePath}/$localeFile";
+        if (YII_DEBUG && !file_exists($localeFilePath)) {
+            throw new InvalidConfigException('Locale file "' . $localeFilePath . '" not exists!');
+        }
+
         $manager = $view->getAssetManager();
         $view->registerJsFile(
-            $manager->getAssetUrl($this, "{$this->locale}.js"),
+            $manager->getAssetUrl($this, $localeFile),
             $this->jsOptions,
             'moment-locale-' . $this->locale
         );
