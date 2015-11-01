@@ -58,7 +58,7 @@ class MomentJsLocaleAsset extends AssetBundle
      * @throws \yii\base\InvalidConfigException If file with the locale is not exists.
      */
     public function registerLocaleInternal($view) {
-        $localeFile = strtolower($this->locale) . '.js';
+        $localeFile = substr(strtolower($this->locale), 0, 2) . '.js';
         $localeFilePath = "{$this->sourcePath}/$localeFile";
         if (YII_DEBUG && !file_exists($localeFilePath)) {
             throw new InvalidConfigException('Locale file "' . $localeFilePath . '" not exists!');
