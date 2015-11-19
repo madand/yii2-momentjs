@@ -58,22 +58,48 @@ class MomentJsLocaleAsset extends AssetBundle
      * @throws \yii\base\InvalidConfigException If file with the locale is not exists.
      */
     public function registerLocaleInternal($view) {
-        $localeFile = strtolower($this->locale) . '.js';
-        $localeFilePath = "{$this->sourcePath}/$localeFile";
-        if (YII_DEBUG && !file_exists($localeFilePath)) {
-            throw new InvalidConfigException('Locale file "' . $localeFilePath . '" not exists!');
+        $localeFilePath = $this->tryFindLocale();
+
+        if (YII_DEBUG && !$localeFilePath) {
+            throw new InvalidConfigException('Locale file "' . \Yii::$app->language . '" not exists!');
         }
 
         $manager = $view->getAssetManager();
         $view->registerJsFile(
-            $manager->getAssetUrl($this, $localeFile),
+            $manager->getAssetUrl($this, $this->locale),
             $this->jsOptions,
             'moment-locale-' . $this->locale
         );
 
         if ($this->setLocaleOnReady) {
-            $js = "moment.locale('{$this->locale}');'";
+            $js = "moment().locale('" . $this->locale ."');";
             $view->registerJs($js, View::POS_READY, 'moment-set-default-locale');
         }
+
+
+    }
+
+    protected function tryFindLocale()
+    {
+        $localeFile = substr(strtolower($this->locale), 0, 2) . '.js';
+        $localeFilePath = "{$this->sourcePath}/$localeFile";
+
+        if (!file_exists($localeFilePath)) {
+            $localeFile = substr(strtolower($this->locale), 0, 5) . '.js';
+            $localeFilePath = "{$this->sourcePath}/$localeFile";
+
+            if (!file_exists($localeFilePath)) {
+                $localeFile = substr(strtolower($this->locale), 3, 5) . '.js';
+                $localeFilePath = "{$this->sourcePath}/$localeFile";
+
+                if (!file_exists($localeFilePath)) {
+                    return false;
+                }
+            }
+        }
+
+        $this->locale = $localeFile;
+
+        return $localeFilePath;
     }
 }
